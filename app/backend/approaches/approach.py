@@ -1,6 +1,14 @@
 import os
 from abc import ABC
 from dataclasses import dataclass
+from urllib.parse import urljoin
+import aiohttp
+from azure.search.documents.aio import SearchClient
+from openai import AsyncOpenAI
+from openai.types.chat import ChatCompletionMessageParam
+from core.authentication import AuthenticationHelper
+from text import nonewlines
+
 from typing import (
     Any,
     AsyncGenerator,
@@ -11,21 +19,14 @@ from typing import (
     TypedDict,
     cast,
 )
-from urllib.parse import urljoin
 
-import aiohttp
-from azure.search.documents.aio import SearchClient
 from azure.search.documents.models import (
     QueryCaptionResult,
     QueryType,
     VectorizedQuery,
     VectorQuery,
 )
-from openai import AsyncOpenAI
-from openai.types.chat import ChatCompletionMessageParam
 
-from core.authentication import AuthenticationHelper
-from text import nonewlines
 
 
 @dataclass
@@ -44,6 +45,7 @@ class Document:
     reranker_score: Optional[float] = None
 
     def serialize_for_results(self) -> dict[str, Any]:
+        # Serialize the Document object into a dictionary for results
         return {
             "id": self.id,
             "content": self.content,
@@ -75,7 +77,7 @@ class Document:
         """Returns a trimmed list of floats from the vector embedding."""
         if embedding:
             if len(embedding) > 2:
-                # Format the embedding list to show the first 2 items followed by the count of the remaining items."""
+                # Format the embedding list to show the first 2 items followed by the count of the remaining items.
                 return f"[{embedding[0]}, {embedding[1]} ...+{len(embedding) - 2} more]"
             else:
                 return str(embedding)
@@ -118,6 +120,7 @@ class Approach(ABC):
         self.vision_token_provider = vision_token_provider
 
     def build_filter(self, overrides: dict[str, Any], auth_claims: dict[str, Any]) -> Optional[str]:
+        # Build the filter based on overrides and authentication claims
         exclude_category = overrides.get("exclude_category")
         security_filter = self.auth_helper.build_security_filters(overrides, auth_claims)
         filters = []
@@ -140,6 +143,7 @@ class Approach(ABC):
         minimum_search_score: Optional[float],
         minimum_reranker_score: Optional[float],
     ) -> List[Document]:
+        # Perform a search based on the provided parameters
         search_text = query_text if use_text_search else ""
         search_vectors = vectors if use_vector_search else []
         if use_semantic_ranker:
@@ -197,6 +201,7 @@ class Approach(ABC):
     def get_sources_content(
         self, results: List[Document], use_semantic_captions: bool, use_image_citation: bool
     ) -> list[str]:
+        # Get the content of the sources based on the search results
         if use_semantic_captions:
             return [
                 (self.get_citation((doc.sourcepage or ""), use_image_citation))
@@ -211,6 +216,7 @@ class Approach(ABC):
             ]
 
     def get_citation(self, sourcepage: str, use_image_citation: bool) -> str:
+        # Get the citation for a source page
         if use_image_citation:
             return sourcepage
         else:
@@ -223,6 +229,7 @@ class Approach(ABC):
             return sourcepage
 
     async def compute_text_embedding(self, q: str):
+        # Compute the text embedding using the OpenAI client
         SUPPORTED_DIMENSIONS_MODEL = {
             "text-embedding-ada-002": False,
             "text-embedding-3-small": True,
@@ -245,6 +252,7 @@ class Approach(ABC):
         return VectorizedQuery(vector=query_vector, k_nearest_neighbors=50, fields="embedding")
 
     async def compute_image_embedding(self, q: str):
+        # Compute the image embedding using the Vision API
         endpoint = urljoin(self.vision_endpoint, "computervision/retrieval:vectorizeText")
         headers = {"Content-Type": "application/json"}
         params = {"api-version": "2023-02-01-preview", "modelVersion": "latest"}
@@ -266,6 +274,7 @@ class Approach(ABC):
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> dict[str, Any]:
+        # Run the approach based on the provided messages, session state, and context
         raise NotImplementedError
 
     async def run_stream(
@@ -274,4 +283,5 @@ class Approach(ABC):
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> AsyncGenerator[dict[str, Any], None]:
+        # Run the approach as a stream based on the provided messages, session state, and context
         raise NotImplementedError

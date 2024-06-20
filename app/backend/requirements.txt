@@ -4,6 +4,46 @@
 #
 #    pip-compile requirements.in
 #
+
+# Project Dependencies
+
+This document lists the dependencies specified in the `requirements.txt` file, along with their versions and the packages that require them as dependencies.
+
+## Dependencies
+
+- **aiofiles (23.2.1)**
+    - Required by: quart
+
+- **aiohttp (3.9.5)**
+    - Required by: 
+        - Direct requirement (`-r requirements.in`)
+        - microsoft-kiota-authentication-azure
+
+- **aiosignal (1.3.1)**
+    - Required by: aiohttp
+
+- **annotated-types (0.7.0)**
+    - Required by: pydantic
+
+- **anyio (4.4.0)**
+    - Required by: 
+        - httpx
+        - openai
+
+- **asgiref (3.8.1)**
+    - Required by: opentelemetry-instrumentation-asgi
+
+- **attrs (23.2.0)**
+    - Required by: aiohttp
+
+- **azure-ai-documentintelligence (1.0.0b3)**
+    - Required by: Direct requirement (`-r requirements.in`)
+
+- **azure-cognitiveservices-speech (1.38.0)**
+    - Required by: Direct requirement (`-r requirements.in`)
+
+- **azure-common (1.1.28)**
+    - Required by: azure-search-documents
 aiofiles==23.2.1
     # via quart
 aiohttp==3.9.5
