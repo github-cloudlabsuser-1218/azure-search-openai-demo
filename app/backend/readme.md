@@ -1,4 +1,4 @@
-# Backend Documentation
+# #Backend Documentation
 
 This backend powers the RAG (Retrieval Augmented Generation) chat app, enabling ChatGPT-like experiences over your own documents using Azure OpenAI Service and Azure AI Search.
 
